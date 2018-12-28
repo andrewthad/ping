@@ -8,7 +8,8 @@
 
 module Network.Icmp.Ping
   ( ping
-  , multiping
+  , hosts
+  , range
   ) where
 
 import Control.Applicative ((<|>))
@@ -18,19 +19,20 @@ import Control.Exception (onException,mask)
 import Data.Bits (unsafeShiftL, unsafeShiftR, (.&.), (.|.), testBit)
 import Data.Functor (($>))
 import Data.Primitive (PrimArray,MutableByteArray)
-import Data.Word (Word64,Word8,Word16)
+import Data.Word (Word64,Word8,Word16,Word32)
 import Foreign.C.Error (Errno(..),errnoToIOError,eAGAIN,eWOULDBLOCK)
 import Foreign.C.Types (CSize(..))
 import GHC.Clock (getMonotonicTimeNSec)
 import GHC.Exts (RealWorld,inline)
 import GHC.IO (IO(..))
-import Net.Types (IPv4(..))
+import Net.Types (IPv4(..),IPv4Range)
 import Network.Icmp.Marshal (peekIcmpHeaderPayload)
 import Network.Icmp.Marshal (peekIcmpHeaderSequenceNumber)
 import Network.Icmp.Marshal (sizeOfIcmpHeader,pokeIcmpHeader)
 import Posix.Socket (SocketAddressInternet(..))
 import System.Endian (toBE32)
 import System.Posix.Types (Fd(..))
+import Unsafe.Coerce (unsafeCoerce)
 
 import qualified Control.Monad.STM as STM
 import qualified Data.Map.Unboxed.Unboxed as MUU
@@ -38,6 +40,7 @@ import qualified Data.Primitive as PM
 import qualified Data.Set.Unboxed as SU
 import qualified Linux.Socket as SCK
 import qualified Posix.Socket as SCK
+import qualified Net.IPv4 as IPv4
 
 debug :: String -> IO ()
 debug _ = pure ()
@@ -154,25 +157,43 @@ waitForReadWrite sock = do
   deregisterWrite
   pure r
 
--- | Ping a group of hosts simultaneously. Performs one ping
+-- | Ping a range of hosts simultaneously.
+range ::
+     Int -- ^ Microseconds to wait for response
+  -> IPv4Range -- ^ Range
+  -> IO (MUU.Map IPv4 Word64)
+range !pause !r = hosts pause $ coerceIPv4Set
+  (SU.enumFromTo
+    (getIPv4 (IPv4.lowerInclusive r))
+    (getIPv4 (IPv4.upperInclusive r))
+  )
+
+-- The existence of this function is a little disappointing. I suspect that
+-- there is a better way to do this (probably by writing version of
+-- Data.Set.Unboxed.enumFromTo that works without a Num constraint),
+-- but I am choosing the easiest path for now.
+coerceIPv4Set :: SU.Set Word32 -> SU.Set IPv4
+coerceIPv4Set = unsafeCoerce
+
+-- | Ping a set of hosts simultaneously. Performs one ping
 --   for each host and reports the elapsed nanoseconds for the
 --   response. If a key is missing from the resulting map, it
 --   indicates that a response was not received from that host.
-multiping ::
+hosts ::
      Int -- ^ Microseconds to wait for response
   -> SU.Set IPv4 -- ^ Hosts
   -> IO (MUU.Map IPv4 Word64)
-multiping !pause !hosts = do
+hosts !pause !theHosts = do
   r <- mask $ \restore -> SCK.socket SCK.internet SCK.datagram SCK.icmp >>= \case
     Left e -> pure (Left ("socket",e))
     Right sock -> do
       durations <- restore
-        ( do let hostsArr = SU.toArray hosts
+        ( do let hostsArr = SU.toArray theHosts
              !buffer <- PM.newByteArray fullPacketSize
              (m,r) <- 
                ( MUU.adjustManyInline
                  (\adjust -> multipingStepA buffer sock pause hostsArr (PM.sizeofPrimArray hostsArr) (inline adjust)
-                 ) (MUU.fromSet (const initialStatus) hosts)
+                 ) (MUU.fromSet (const initialStatus) theHosts)
                )
              pure $ case r of
                Left pair -> Left pair
