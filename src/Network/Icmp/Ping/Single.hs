@@ -15,7 +15,7 @@ import Control.Concurrent.STM.TVar (readTVar,registerDelay)
 import Control.Exception (onException,mask)
 import Data.Functor (($>))
 import Data.Word (Word64,Word8)
-import Foreign.C.Error (Errno(..),eAGAIN,eWOULDBLOCK)
+import Foreign.C.Error (Errno(..),eAGAIN,eWOULDBLOCK,eACCES)
 import Foreign.C.Types (CSize(..))
 import GHC.Clock (getMonotonicTimeNSec)
 import GHC.IO (IO(..))
@@ -64,7 +64,11 @@ ping !maxWaitTime (IPv4 !w) = if maxWaitTime <= 0
                  (SCK.unsafeSendToMutableByteArray sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait sockaddr)
                  (threadWaitWrite sock)
                case mwriteError of
-                 Left (Errno e) -> pure (Left (IcmpExceptionSend e))
+                 Left (Errno e)
+                     -- When you try to send a packet to a broadcast address, the kernel
+                     -- gives you an EACCES failure.
+                   | Errno e == eACCES -> pure (Right Nothing)
+                   | otherwise -> pure (Left (IcmpExceptionSend e))
                  Right sentBytes -> do
                    if sentBytes == intToCSize fullPacketSize
                      then do

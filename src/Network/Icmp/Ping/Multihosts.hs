@@ -39,6 +39,10 @@ import qualified Data.Set.Unboxed as SU
 import qualified Linux.Socket as SCK
 import qualified Posix.Socket as SCK
 
+-- TODO: Inspect the core for this. Make sure that the functions
+-- from primitive-containers are inlining as expected and that
+-- no machine words are getting boxed.
+
 debug :: String -> IO ()
 debug _ = pure ()
 -- debug = putStrLn
