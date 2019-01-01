@@ -7,13 +7,11 @@ module Network.Icmp.Marshal
   ( pokeIcmpHeader
   , peekIcmpHeaderSequenceNumber
   , peekIcmpHeaderPayload
+  , peekIcmpHeaderType
   , sizeOfIcmpHeader
   ) where
 
-import GHC.Ptr (Ptr(..))
-import Data.Void (Void)
 import Data.Word (Word32,Word16,Word8)
-import Foreign.Storable (peekByteOff,pokeByteOff)
 import GHC.Exts (RealWorld)
 
 import Data.Primitive (MutableByteArray)
@@ -61,6 +59,10 @@ pokeIcmpHeader ptr sequenceNumber payload = do
   #{write struct icmphdr, type} ptr (#{const ICMP_ECHO} :: Word8)
   #{write struct icmphdr, un.echo.sequence} ptr sequenceNumber
   writeByteArray ptr #{elementize sizeof (struct icmphdr), 4} payload
+
+peekIcmpHeaderType :: MutableByteArray RealWorld -> IO Word8
+peekIcmpHeaderType ptr = do
+  #{read struct icmphdr, type} ptr
 
 peekIcmpHeaderSequenceNumber :: MutableByteArray RealWorld -> IO Word16
 peekIcmpHeaderSequenceNumber ptr = do
