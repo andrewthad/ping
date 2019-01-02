@@ -37,7 +37,7 @@ library
     , cpu >= 0.1.2
     , posix-api
     , primitive >= 0.6.4
-    , primitive-containers >= 0.3.0
+    , primitive-containers >= 0.3.1
     , stm >= 2.5
     , transformers >= 0.5.5
   exposed-modules: Network.Icmp.Ping
