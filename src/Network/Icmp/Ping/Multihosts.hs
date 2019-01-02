@@ -8,36 +8,48 @@
 
 module Network.Icmp.Ping.Multihosts
   ( multihosts
+  , multirange
   ) where
 
 import Control.Applicative ((<|>))
 import Control.Concurrent (threadWaitReadSTM,threadWaitWrite)
 import Control.Concurrent.STM.TVar (readTVar,registerDelay)
 import Control.Exception (onException,mask)
+import Control.Monad.Trans.Except (ExceptT(..),runExceptT)
 import Data.Functor (($>))
 import Data.Primitive (PrimArray,MutableByteArray,MutablePrimArray)
-import Data.Word (Word64,Word8,Word16)
+import Data.Word (Word64,Word8,Word16,Word32)
 import Foreign.C.Error (Errno(..),eAGAIN,eWOULDBLOCK,eACCES)
 import Foreign.C.Types (CSize(..))
 import GHC.Clock (getMonotonicTimeNSec)
 import GHC.Exts (RealWorld)
 import GHC.IO (IO(..))
-import Net.Types (IPv4(..))
+import Net.Types (IPv4(..),IPv4Range)
+import Network.Icmp.Common (IcmpException(..))
 import Network.Icmp.Marshal (peekIcmpHeaderPayload)
 import Network.Icmp.Marshal (peekIcmpHeaderSequenceNumber)
 import Network.Icmp.Marshal (sizeOfIcmpHeader,pokeIcmpHeader)
-import Network.Icmp.Common (IcmpException(..))
 import Posix.Socket (SocketAddressInternet(..))
 import System.Endian (toBE32)
 import System.Posix.Types (Fd(..))
-import Control.Monad.Trans.Except (ExceptT(..),runExceptT)
+import Unsafe.Coerce (unsafeCoerce)
 
 import qualified Control.Monad.STM as STM
 import qualified Data.Map.Unboxed.Unlifted as MUN
 import qualified Data.Primitive as PM
 import qualified Data.Set.Unboxed as SU
 import qualified Linux.Socket as SCK
+import qualified Net.IPv4 as IPv4
 import qualified Posix.Socket as SCK
+
+-- TODO: The repeated reallocation for the SockAddr seems
+-- a little wasteful. Two possible options are:
+--
+-- * Use a mutable buffer instead (posix-api doesn't currently support this)
+-- * Cache the sockaddrs on a per-host basis.
+--
+-- I lean toward the first option since it would also
+-- reduce allocations in Network.Icmp.Ping.Hosts.
 
 debug :: String -> IO ()
 debug _ = pure ()
@@ -302,3 +314,33 @@ writeWhenReady f wait = f >>= \case
     then wait *> f 
     else pure (Left e1)
   Right i -> pure (Right i)
+
+-- | Send multiple pings to each host in a range of hosts simultaneously.
+multirange ::
+     Int -- ^ Microseconds to wait for response
+  -> Int -- ^ Microsecond delay between pings to same host 
+  -> Int -- ^ Number of pings per host 
+  -> Int -- ^ Nonresponsive cutoff
+  -> IPv4Range -- ^ Range
+  -> IO (Either IcmpException (MUN.Map IPv4 (PrimArray Word64))) -- ^ Elapsed nanoseconds for responsive hosts
+multirange !pause !successPause !totalPings !cutoff !r =
+  multihosts pause successPause totalPings cutoff $ coerceIPv4Set
+    (SU.enumFromTo
+      (getIPv4 (IPv4.lowerInclusive r))
+      (getIPv4 (IPv4.upperInclusive r))
+    )
+
+-- The existence of this function is a little disappointing. I suspect that
+-- there is a better way to do this (probably by writing version of
+-- Data.Set.Unboxed.enumFromTo that works without a Num constraint),
+-- but I am choosing the easiest path for now.
+--
+-- TODO: There is a better way. I need to rewrite
+-- Data.Primitive.Contiguous.fromList to be compatible with
+-- list fusion. Then Data.Set.Unboxed.enumFromTo can use
+-- that, and everything should work out alright. Well, we
+-- still must perform an extra check to ensure that the
+-- enum instance is compatible with the Ord instance,
+-- but that's not too bad.
+coerceIPv4Set :: SU.Set Word32 -> SU.Set IPv4
+coerceIPv4Set = unsafeCoerce

@@ -103,6 +103,14 @@ range !pause !r = hosts pause $ coerceIPv4Set
 -- there is a better way to do this (probably by writing version of
 -- Data.Set.Unboxed.enumFromTo that works without a Num constraint),
 -- but I am choosing the easiest path for now.
+--
+-- TODO: There is a better way. I need to rewrite
+-- Data.Primitive.Contiguous.fromList to be compatible with
+-- list fusion. Then Data.Set.Unboxed.enumFromTo can use
+-- that, and everything should work out alright. Well, we
+-- still must perform an extra check to ensure that the
+-- enum instance is compatible with the Ord instance,
+-- but that's not too bad.
 coerceIPv4Set :: SU.Set Word32 -> SU.Set IPv4
 coerceIPv4Set = unsafeCoerce
 

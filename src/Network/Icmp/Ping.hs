@@ -4,6 +4,7 @@ module Network.Icmp.Ping
   , H.hosts
   , H.range
   , M.multihosts
+  , M.multirange
     -- * Exceptions
   , IcmpException(..)
   ) where
