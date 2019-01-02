@@ -1,8 +1,11 @@
 module Network.Icmp.Ping
-  ( S.ping
+  ( -- * Functions
+    S.ping
   , H.hosts
   , H.range
   , M.multihosts
+    -- * Exceptions
+  , IcmpException(..)
   ) where
 
 -- TODO: Figure out a more graceful way to fail when someone tries
@@ -12,3 +15,4 @@ module Network.Icmp.Ping
 import qualified Network.Icmp.Ping.Single as S
 import qualified Network.Icmp.Ping.Hosts as H
 import qualified Network.Icmp.Ping.Multihosts as M
+import Network.Icmp.Common (IcmpException(..))

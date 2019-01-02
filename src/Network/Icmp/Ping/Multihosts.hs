@@ -26,7 +26,7 @@ import Net.Types (IPv4(..))
 import Network.Icmp.Marshal (peekIcmpHeaderPayload)
 import Network.Icmp.Marshal (peekIcmpHeaderSequenceNumber)
 import Network.Icmp.Marshal (sizeOfIcmpHeader,pokeIcmpHeader)
-import Network.Icmp.Ping.Common (IcmpException(..))
+import Network.Icmp.Common (IcmpException(..))
 import Posix.Socket (SocketAddressInternet(..))
 import System.Endian (toBE32)
 import System.Posix.Types (Fd(..))
@@ -38,10 +38,6 @@ import qualified Data.Primitive as PM
 import qualified Data.Set.Unboxed as SU
 import qualified Linux.Socket as SCK
 import qualified Posix.Socket as SCK
-
--- TODO: Inspect the core for this. Make sure that the functions
--- from primitive-containers are inlining as expected and that
--- no machine words are getting boxed.
 
 debug :: String -> IO ()
 debug _ = pure ()
@@ -119,7 +115,7 @@ multihosts !pause !successPause' !totalPings !cutoff !theHosts
       Right sock -> do
         !now0 <- getMonotonicTimeNSec
         !buffer <- PM.newByteArray fullPacketSize
-        durations <- restore
+        !durations <- restore
           ( do let nanoPause = intToWord64 pause * 1000
                let nanoSuccessPause = intToWord64 successPause * 1000
                eworking <- runExceptT $ MUN.fromSetP
