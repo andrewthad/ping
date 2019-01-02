@@ -6,7 +6,7 @@
 {-# language EmptyCase #-}
 
 module Network.Icmp.Ping.Single
-  ( ping
+  ( host
   ) where
 
 import Control.Applicative ((<|>))
@@ -37,11 +37,11 @@ fullPacketSize :: Int
 fullPacketSize = sizeOfIcmpHeader + 4
 
 -- | Ping an IPv4 address. Blocks until a response is received.
-ping ::
+host ::
      Int -- ^ Microseconds to wait for response
   -> IPv4 -- ^ Host
   -> IO (Either IcmpException (Maybe Word64)) -- ^ Elapsed nanoseconds
-ping !maxWaitTime (IPv4 !w) = if maxWaitTime <= 0
+host !maxWaitTime (IPv4 !w) = if maxWaitTime <= 0
   then pure (Right Nothing)
   else do
     -- If a socket cannot be opened, there is not a sensible way for the

@@ -1,6 +1,6 @@
 module Network.Icmp.Ping
   ( -- * Functions
-    S.ping
+    S.host
   , H.hosts
   , H.range
   , M.multihosts
