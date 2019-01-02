@@ -1,17 +1,24 @@
 cabal-version: 2.2
-name: ping
+name: icmp
 version: 0.1.0.0
-synopsis: icmp echo request
+synopsis: icmp requests
 description:
   This library provides functions that have similar behavior as the
   unix command-line utility ping. In particular, both emit ICMP echo requests
   and wait for responses. This library uses a haskell implementation of ICMP
-  rather than invoking `/bin/ping`. The cost of this is that the process
-  running this must have the `CAP_NET_RAW` capability or must be running
-  as root. However, this avoids the costly process of starting a child
-  process. Additionally, there are greater opportunities for reusing
-  sockets.
-homepage: https://github.com/andrewthad/ping
+  rather than invoking `/bin/ping`. This avoids the costly process of starting
+  a child process. Additionally, there are greater opportunities for reusing
+  sockets. The cost of this is that the user must ensure that one of these
+  is true:
+  .
+  * The kernel parameter `net.ipv4.ping_group_range` has been configured
+    to allow pings to all IP addresses. (preferred solution)
+  .
+  * The process is running with the the `CAP_NET_RAW` capability.
+  .
+  * The process is running as root. (worst solution)
+  .
+homepage: https://github.com/andrewthad/icmp
 license: BSD-3-Clause
 license-file: LICENSE
 author: Andrew Martin
