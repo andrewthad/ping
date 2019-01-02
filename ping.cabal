@@ -1,7 +1,7 @@
 cabal-version: 2.2
-name: icmp
+name: ping
 version: 0.1.0.0
-synopsis: icmp requests
+synopsis: icmp echo requests
 description:
   This library provides functions that have similar behavior as the
   unix command-line utility ping. In particular, both emit ICMP echo requests
@@ -18,7 +18,7 @@ description:
   .
   * The process is running as root. (worst solution)
   .
-homepage: https://github.com/andrewthad/icmp
+homepage: https://github.com/andrewthad/ping
 license: BSD-3-Clause
 license-file: LICENSE
 author: Andrew Martin
