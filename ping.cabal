@@ -35,7 +35,7 @@ library
     , base >= 4.11.1 && <5
     , ip >= 1.4
     , cpu >= 0.1.2
-    , posix-api
+    , posix-api >= 0.1
     , primitive >= 0.6.4
     , primitive-containers >= 0.3.1
     , stm >= 2.5
