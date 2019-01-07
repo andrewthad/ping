@@ -61,11 +61,13 @@ fullPacketSize = sizeOfIcmpHeader + 4
 -- True if there is something on the buffer to be read
 -- and False if nothing showed up in time.
 waitForRead ::
-     Int -- Maximum number of microseconds to wait.
+     Bool -- Should we attempt to read?
+  -> Int -- Maximum number of microseconds to wait.
   -> Fd -- Socket
   -> IO Bool
-waitForRead !maxWaitTime !sock = if maxWaitTime > 0
+waitForRead !shouldRead !maxWaitTime !sock = if maxWaitTime > 0 && shouldRead
   then do
+    debug ("About to wait for " ++ show maxWaitTime ++ " microseconds")
     (isReadyAction,deregister) <- threadWaitReadSTM sock
     delay <- registerDelay maxWaitTime
     isContentReady <- STM.atomically $
@@ -132,6 +134,8 @@ multihosts !pause !successPause' !totalPings !cutoff !theHosts
                    m <- PM.newPrimArray (totalPings + 4)
                    PM.setPrimArray m 0 (totalPings + 4) (0 :: Word64)
                    debug ("Sending initial to " ++ show theHost) 
+                   -- We intentionally discard the time that performSend tells
+                   -- us to wait until since we can easily calculate this number.
                    performSend 0 now0 nanoPause sock totalPings theHost buffer m >>= \case
                      Left err -> pure (Left err)
                      Right _ -> pure (Right m)
@@ -141,9 +145,14 @@ multihosts !pause !successPause' !totalPings !cutoff !theHosts
                  Right working -> do
                    let go :: Word64 -> Word64 -> IO (Either IcmpException ())
                        go !currentPause !nextTime = do
+                         -- Since currentPause is represent an an unsigned type,
+                         -- it jumps up to near the max bound when we end up
+                         -- exceeding the amount of time we are supposed to take.
+                         -- The identifier shouldRead becomes False when this happens,
+                         -- and we move on to the next round of updates.
+                         let shouldRead = currentPause <= nanoPause
                          let microPause = div currentPause 1000
-                         debug ("About to wait for " ++ show microPause ++ " microseconds")
-                         waitForRead (word64ToInt microPause) sock >>= \case
+                         waitForRead shouldRead (word64ToInt microPause) sock >>= \case
                            True -> do
                              debug "Receiving in poll loop"
                              r <- SCK.unsafeReceiveFromMutableByteArray_ sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait
