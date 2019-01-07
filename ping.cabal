@@ -1,6 +1,6 @@
 cabal-version: 2.2
 name: ping
-version: 0.1.0.0
+version: 0.1.0.1
 synopsis: icmp echo requests
 description:
   This library provides functions that have similar behavior as the
