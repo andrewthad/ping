@@ -30,7 +30,17 @@ extra-source-files:
   CHANGELOG.md
   include/custom.h
 
+flag debug
+  manual: True
+  description: Print debug output 
+  default: False
+
 library
+  hs-source-dirs: src
+  if flag(debug)
+    hs-source-dirs: src-debug
+  else
+    hs-source-dirs: src-production
   build-depends:
     , base >= 4.11.1 && <5
     , ip >= 1.4
@@ -47,7 +57,7 @@ library
     Network.Icmp.Ping.Hosts
     Network.Icmp.Ping.Multihosts
     Network.Icmp.Common
-  hs-source-dirs: src
+    Network.Icmp.Ping.Debug
   default-language: Haskell2010
   build-tools: hsc2hs
   ghc-options: -O2 -Wall

@@ -29,6 +29,7 @@ import Network.Icmp.Common (IcmpException(..))
 import Network.Icmp.Marshal (peekIcmpHeaderPayload)
 import Network.Icmp.Marshal (peekIcmpHeaderSequenceNumber)
 import Network.Icmp.Marshal (sizeOfIcmpHeader,pokeIcmpHeader)
+import Network.Icmp.Ping.Debug (debug)
 import Posix.Socket (SocketAddressInternet(..))
 import System.Endian (toBE32)
 import System.Posix.Types (Fd(..))
@@ -50,10 +51,6 @@ import qualified Posix.Socket as SCK
 --
 -- I lean toward the first option since it would also
 -- reduce allocations in Network.Icmp.Ping.Hosts.
-
-debug :: String -> IO ()
-debug _ = pure ()
--- debug = putStrLn
 
 -- Why plus 4? We have 4 extra bytes for the IPv4 address.
 fullPacketSize :: Int

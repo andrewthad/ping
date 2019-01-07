@@ -31,10 +31,11 @@ import GHC.Clock (getMonotonicTimeNSec)
 import GHC.Exts (RealWorld)
 import GHC.IO (IO(..))
 import Net.Types (IPv4(..),IPv4Range)
+import Network.Icmp.Common (IcmpException(..))
 import Network.Icmp.Marshal (peekIcmpHeaderPayload,peekIcmpHeaderType)
 import Network.Icmp.Marshal (peekIcmpHeaderSequenceNumber)
 import Network.Icmp.Marshal (sizeOfIcmpHeader,pokeIcmpHeader)
-import Network.Icmp.Common (IcmpException(..))
+import Network.Icmp.Ping.Debug (debug)
 import Posix.Socket (SocketAddressInternet(..))
 import System.Endian (toBE32)
 import System.Posix.Types (Fd(..))
@@ -47,10 +48,6 @@ import qualified Data.Set.Unboxed as SU
 import qualified Linux.Socket as SCK
 import qualified Posix.Socket as SCK
 import qualified Net.IPv4 as IPv4
-
-debug :: String -> IO ()
-debug _ = pure ()
--- debug = putStrLn
 
 fullPacketSize :: Int
 fullPacketSize = sizeOfIcmpHeader + 4
