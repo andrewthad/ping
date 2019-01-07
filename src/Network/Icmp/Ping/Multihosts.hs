@@ -141,7 +141,9 @@ multihosts !pause !successPause' !totalPings !cutoff !theHosts
                  Right working -> do
                    let go :: Word64 -> Word64 -> IO (Either IcmpException ())
                        go !currentPause !nextTime = do
-                         waitForRead (word64ToInt (div currentPause 1000)) sock >>= \case
+                         let microPause = div currentPause 1000
+                         debug ("About to wait for " ++ show microPause ++ " microseconds")
+                         waitForRead (word64ToInt microPause) sock >>= \case
                            True -> do
                              debug "Receiving in poll loop"
                              r <- SCK.unsafeReceiveFromMutableByteArray_ sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait
