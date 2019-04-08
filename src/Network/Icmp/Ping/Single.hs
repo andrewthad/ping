@@ -49,7 +49,7 @@ host !maxWaitTime (IPv4 !w) = if maxWaitTime <= 0
     -- has a fancy way to display the failure. The user will likely need to
     -- rerun the program with CAP_NET_RAW or as root or after adjusting
     -- net.ipv4.ping_group_range with sysctl.
-    mask $ \restore -> SCK.socket SCK.internet SCK.datagram SCK.icmp >>= \case
+    mask $ \restore -> SCK.uninterruptibleSocket SCK.internet SCK.datagram SCK.icmp >>= \case
       Left (Errno e) -> pure (Left (IcmpExceptionSocket e))
       Right sock -> do
         elapsed <- restore
@@ -61,7 +61,7 @@ host !maxWaitTime (IPv4 !w) = if maxWaitTime <= 0
                pokeIcmpHeader buffer 0 w 
                start <- getMonotonicTimeNSec
                mwriteError <- writeWhenReady
-                 (SCK.unsafeSendToMutableByteArray sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait sockaddr)
+                 (SCK.uninterruptibleSendToMutableByteArray sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait sockaddr)
                  (threadWaitWrite sock)
                case mwriteError of
                  Left (Errno e)
@@ -75,7 +75,7 @@ host !maxWaitTime (IPv4 !w) = if maxWaitTime <= 0
                        isReady <- waitForRead maxWaitTime sock
                        if isReady
                          then do
-                           r <- SCK.unsafeReceiveFromMutableByteArray_ sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait
+                           r <- SCK.uninterruptibleReceiveFromMutableByteArray_ sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait
                            case r of
                              Left (Errno e) -> pure (Left (IcmpExceptionReceive e))
                              Right receivedBytes -> if receivedBytes == intToCSize fullPacketSize
@@ -98,10 +98,10 @@ host !maxWaitTime (IPv4 !w) = if maxWaitTime <= 0
           -- by unsafeClose (not that we expect to see any). We do this
           -- because there is no other sensible behavior. We would much
           -- rather preserve the original exception.
-          (SCK.unsafeClose sock)
+          (SCK.uninterruptibleClose sock)
         -- It is not neccessary to use closeFdWith here since the socket
         -- cannot possibly be seen by more than one thread.
-        SCK.unsafeClose sock >>= \case
+        SCK.uninterruptibleClose sock >>= \case
           Left (Errno e) -> pure (Left (IcmpExceptionClose e))
           Right _ -> pure elapsed
 

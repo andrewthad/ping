@@ -121,7 +121,7 @@ multihosts ::
 -- over the course of the loop's execution.
 multihosts !pause !successPause' !totalPings !cutoff !theHosts
   | pause <= 0 || totalPings <= 0 || cutoff <= 0 || SU.null theHosts = pure (Right mempty)
-  | otherwise = let !successPause = max successPause' 0 in mask $ \restore -> SCK.socket SCK.internet SCK.datagram SCK.icmp >>= \case
+  | otherwise = let !successPause = max successPause' 0 in mask $ \restore -> SCK.uninterruptibleSocket SCK.internet SCK.datagram SCK.icmp >>= \case
       Left (Errno e) -> pure (Left (IcmpExceptionSocket e))
       Right sock -> do
         !now0 <- getMonotonicTimeNSec
@@ -155,7 +155,7 @@ multihosts !pause !successPause' !totalPings !cutoff !theHosts
                          waitForRead shouldRead (word64ToInt microPause) sock >>= \case
                            True -> do
                              debug "Receiving in poll loop"
-                             r <- SCK.unsafeReceiveFromMutableByteArray_ sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait
+                             r <- SCK.uninterruptibleReceiveFromMutableByteArray_ sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait
                              case r of
                                Left (Errno e) -> pure (Left (IcmpExceptionReceive e))
                                Right receivedBytes -> if receivedBytes == intToCSize fullPacketSize
@@ -210,8 +210,8 @@ multihosts !pause !successPause' !totalPings !cutoff !theHosts
                        )
           )
           `onException`
-          (SCK.unsafeClose sock)
-        SCK.unsafeClose sock >>= \case
+          (SCK.uninterruptibleClose sock)
+        SCK.uninterruptibleClose sock >>= \case
           Left (Errno e) -> pure (Left (IcmpExceptionClose e))
           Right _ -> pure durations
 
@@ -269,7 +269,7 @@ performSend attemptedPings now pause sock totalPings theHost buffer durations = 
   let sockaddr = SCK.encodeSocketAddressInternet
         (SocketAddressInternet { port = 0, address = toBE32 (getIPv4 theHost) })
   mwriteError <- writeWhenReady
-    (SCK.unsafeSendToMutableByteArray sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait sockaddr)
+    (SCK.uninterruptibleSendToMutableByteArray sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait sockaddr)
     (threadWaitWrite sock)
   case mwriteError of
     Left (Errno e)

@@ -1,6 +1,6 @@
 cabal-version: 2.2
 name: ping
-version: 0.1.0.1
+version: 0.1.0.2
 synopsis: icmp echo requests
 description:
   This library provides functions that have similar behavior as the
@@ -23,7 +23,7 @@ license: BSD-3-Clause
 license-file: LICENSE
 author: Andrew Martin
 maintainer: andrew.thaddeus@gmail.com
-copyright: 2018 Andrew Martin
+copyright: 2019 Andrew Martin
 category: Network
 build-type: Simple
 extra-source-files:
@@ -46,7 +46,7 @@ library
     , base >= 4.11.1 && <5
     , ip >= 1.4
     , cpu >= 0.1.2
-    , posix-api >= 0.1
+    , posix-api >= 0.2.1 && < 0.3
     , primitive >= 0.6.4
     , primitive-containers >= 0.3.1
     , stm >= 2.5

@@ -120,7 +120,7 @@ hosts ::
   -> SU.Set IPv4 -- ^ Hosts
   -> IO (Either IcmpException (MUU.Map IPv4 Word64)) -- ^ Elapsed nanoseconds for responding hosts
 hosts !pause !theHosts = do
-  mask $ \restore -> SCK.socket SCK.internet SCK.datagram SCK.icmp >>= \case
+  mask $ \restore -> SCK.uninterruptibleSocket SCK.internet SCK.datagram SCK.icmp >>= \case
     Left (Errno e) -> pure (Left (IcmpExceptionSocket e))
     Right sock -> do
       durations <- restore
@@ -140,8 +140,8 @@ hosts !pause !theHosts = do
                  )
         )
         `onException`
-        (SCK.unsafeClose sock)
-      SCK.unsafeClose sock >>= \case
+        (SCK.uninterruptibleClose sock)
+      SCK.uninterruptibleClose sock >>= \case
         Left (Errno e) -> pure (Left (IcmpExceptionClose e))
         Right _ -> pure durations
 
@@ -153,7 +153,7 @@ hostsStepA !buffer !sock !pause !hostsArr !hostsLen adjust = go 0 where
       waitForReadWrite sock >>= \case
         True -> do
           debug "ready for read"
-          r <- SCK.unsafeReceiveFromMutableByteArray_ sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait
+          r <- SCK.uninterruptibleReceiveFromMutableByteArray_ sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait
           case r of
             Left (Errno e) -> pure (Left (IcmpExceptionReceive e))
             Right receivedBytes -> if receivedBytes == intToCSize fullPacketSize
@@ -185,7 +185,7 @@ hostsStepA !buffer !sock !pause !hostsArr !hostsLen adjust = go 0 where
           pokeIcmpHeader buffer (intToWord16 ix) (getIPv4 host)
           let sockaddr = SCK.encodeSocketAddressInternet
                 (SocketAddressInternet { port = 0, address = toBE32 (getIPv4 host) })
-          mwriteError <- SCK.unsafeSendToMutableByteArray sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait sockaddr
+          mwriteError <- SCK.uninterruptibleSendToMutableByteArray sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait sockaddr
           case mwriteError of
             Left (Errno e)
                 -- When you try to send a packet to a broadcast address, the kernel
@@ -221,7 +221,7 @@ hostsStepB !buffer !sock !pause !adjust !initialTime = go initialTime where
         isReady <- waitForRead remainingMicroseconds sock
         if isReady
           then do
-            r <- SCK.unsafeReceiveFromMutableByteArray_ sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait
+            r <- SCK.uninterruptibleReceiveFromMutableByteArray_ sock buffer 0 (intToCSize fullPacketSize) SCK.dontWait
             case r of
               Left (Errno e) -> pure (Left (IcmpExceptionReceive e))
               Right receivedBytes -> if receivedBytes == intToCSize fullPacketSize
