@@ -111,19 +111,19 @@ commandParser :: P.Parser Command
 commandParser = P.hsubparser $ mconcat
   [ P.command "host" $ P.info
       (CommandHost <$> hostParser)
-      (P.progDesc "Send a single ICMP echo request to a single host")
+      (P.progDesc "One ICMP echo request to a single host")
   , P.command "hosts" $ P.info
       (CommandHosts <$> hostsParser)
-      (P.progDesc "Send a single ICMP echo request to each argument host")
+      (P.progDesc "One ICMP echo request to each argument host")
   , P.command "range" $ P.info
       (CommandRange <$> rangeParser)
-      (P.progDesc "Send a single ICMP echo request to each host in range")
+      (P.progDesc "One ICMP echo request to each host in range")
   , P.command "multihosts" $ P.info
       (CommandMultihosts <$> multihostsParser)
-      (P.progDesc "Send multiple ICMP echo requests to each argument host")
+      (P.progDesc "Multiple ICMP echo requests to each argument host")
   , P.command "multirange" $ P.info
       (CommandMultirange <$> multirangeParser)
-      (P.progDesc "Send multiple ICMP echo requests to each host in range")
+      (P.progDesc "Multiple ICMP echo requests to each host in range")
   ]
 
 hostParser :: P.Parser Host
