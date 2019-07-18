@@ -33,7 +33,7 @@ extra-source-files:
 
 flag debug
   manual: True
-  description: Print debug output 
+  description: Print debug output
   default: False
 
 flag application
@@ -51,8 +51,9 @@ library
     , base >= 4.11.1 && <5
     , ip >= 1.4
     , cpu >= 0.1.2
-    , posix-api >= 0.2.1 && < 0.3
-    , primitive >= 0.6.4
+    , posix-api >= 0.3 && < 0.4
+    , primitive >= 0.7 && < 0.8
+    , primitive-addr >= 0.1 && < 0.2
     , primitive-containers >= 0.3.1
     , stm >= 2.5
     , transformers >= 0.5.5
