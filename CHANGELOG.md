@@ -7,6 +7,13 @@ added, changed, deprecated, etc. subsections.
 
 This project adheres to the [Haskell Package Versioning Policy](https://pvp.haskell.org/).
 
+## [0.1.0.3] - 2019-07-22
+- Library now builds with newer `posix-api-0.3.*` and with
+  `primitive-0.7.*`.
+
+## [0.1.0.2] - 2019-04-08
+- Not documented
+
 ## [0.1.0.1] - 2018-01-07
 - Fix a problem in `multihosts` that occassionally caused the function
   to wait for a number of nanoseconds close to `maxBound :: Word64`.
