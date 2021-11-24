@@ -121,7 +121,7 @@ multihosts ::
 -- over the course of the loop's execution.
 multihosts !pause !successPause' !totalPings !cutoff !theHosts
   | pause <= 0 || totalPings <= 0 || cutoff <= 0 || SU.null theHosts = pure (Right mempty)
-  | otherwise = let !successPause = max successPause' 0 in mask $ \restore -> SCK.uninterruptibleSocket SCK.internet SCK.datagram SCK.icmp >>= \case
+  | otherwise = let !successPause = max successPause' 0 in mask $ \restore -> SCK.uninterruptibleSocket SCK.Internet SCK.datagram SCK.icmp >>= \case
       Left (Errno e) -> pure (Left (IcmpExceptionSocket e))
       Right sock -> do
         !now0 <- getMonotonicTimeNSec

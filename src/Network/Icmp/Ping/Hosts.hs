@@ -120,7 +120,7 @@ hosts ::
   -> SU.Set IPv4 -- ^ Hosts
   -> IO (Either IcmpException (MUU.Map IPv4 Word64)) -- ^ Elapsed nanoseconds for responding hosts
 hosts !pause !theHosts = do
-  mask $ \restore -> SCK.uninterruptibleSocket SCK.internet SCK.datagram SCK.icmp >>= \case
+  mask $ \restore -> SCK.uninterruptibleSocket SCK.Internet SCK.datagram SCK.icmp >>= \case
     Left (Errno e) -> pure (Left (IcmpExceptionSocket e))
     Right sock -> do
       durations <- restore
