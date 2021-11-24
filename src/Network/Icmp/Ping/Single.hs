@@ -49,7 +49,7 @@ host !maxWaitTime (IPv4 !w) = if maxWaitTime <= 0
     -- has a fancy way to display the failure. The user will likely need to
     -- rerun the program with CAP_NET_RAW or as root or after adjusting
     -- net.ipv4.ping_group_range with sysctl.
-    mask $ \restore -> SCK.uninterruptibleSocket SCK.internet SCK.datagram SCK.icmp >>= \case
+    mask $ \restore -> SCK.uninterruptibleSocket SCK.Internet SCK.datagram SCK.icmp >>= \case
       Left (Errno e) -> pure (Left (IcmpExceptionSocket e))
       Right sock -> do
         elapsed <- restore
