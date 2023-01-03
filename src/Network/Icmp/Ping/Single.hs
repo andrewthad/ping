@@ -1,9 +1,10 @@
 {-# language BangPatterns #-}
+{-# language EmptyCase #-}
 {-# language LambdaCase #-}
 {-# language MagicHash #-}
+{-# language PatternSynonyms #-}
 {-# language ScopedTypeVariables #-}
 {-# language UnboxedTuples #-}
-{-# language EmptyCase #-}
 
 module Network.Icmp.Ping.Single
   ( host
@@ -18,7 +19,6 @@ import Data.Word (Word64,Word8)
 import Foreign.C.Error (Errno(..),eAGAIN,eWOULDBLOCK,eACCES)
 import Foreign.C.Types (CSize(..))
 import GHC.Clock (getMonotonicTimeNSec)
-import GHC.IO (IO(..))
 import Net.Types (IPv4(..))
 import Network.Icmp.Common (IcmpException(..))
 import Network.Icmp.Marshal (peekIcmpHeaderPayload,peekIcmpHeaderType)

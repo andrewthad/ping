@@ -1,10 +1,11 @@
 {-# language BangPatterns #-}
 {-# language BinaryLiterals #-}
+{-# language EmptyCase #-}
 {-# language LambdaCase #-}
 {-# language MagicHash #-}
+{-# language PatternSynonyms #-}
 {-# language ScopedTypeVariables #-}
 {-# language UnboxedTuples #-}
-{-# language EmptyCase #-}
 
 module Network.Icmp.Ping.Hosts
   ( hosts
@@ -29,7 +30,6 @@ import Foreign.C.Error (Errno(..),eACCES)
 import Foreign.C.Types (CSize(..))
 import GHC.Clock (getMonotonicTimeNSec)
 import GHC.Exts (RealWorld)
-import GHC.IO (IO(..))
 import Net.Types (IPv4(..),IPv4Range)
 import Network.Icmp.Common (IcmpException(..))
 import Network.Icmp.Marshal (peekIcmpHeaderPayload,peekIcmpHeaderType)
@@ -46,8 +46,8 @@ import qualified Data.Map.Unboxed.Unboxed as MUU
 import qualified Data.Primitive as PM
 import qualified Data.Set.Unboxed as SU
 import qualified Linux.Socket as SCK
-import qualified Posix.Socket as SCK
 import qualified Net.IPv4 as IPv4
+import qualified Posix.Socket as SCK
 
 fullPacketSize :: Int
 fullPacketSize = sizeOfIcmpHeader + 4

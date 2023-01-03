@@ -1,10 +1,11 @@
 {-# language BangPatterns #-}
 {-# language BinaryLiterals #-}
+{-# language EmptyCase #-}
 {-# language LambdaCase #-}
 {-# language MagicHash #-}
+{-# language PatternSynonyms #-}
 {-# language ScopedTypeVariables #-}
 {-# language UnboxedTuples #-}
-{-# language EmptyCase #-}
 
 module Network.Icmp.Ping.Multihosts
   ( multihosts
@@ -23,7 +24,6 @@ import Foreign.C.Error (Errno(..),eAGAIN,eWOULDBLOCK,eACCES)
 import Foreign.C.Types (CSize(..))
 import GHC.Clock (getMonotonicTimeNSec)
 import GHC.Exts (RealWorld)
-import GHC.IO (IO(..))
 import Net.Types (IPv4(..),IPv4Range)
 import Network.Icmp.Common (IcmpException(..))
 import Network.Icmp.Marshal (peekIcmpHeaderPayload)
