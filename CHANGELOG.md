@@ -7,6 +7,10 @@ added, changed, deprecated, etc. subsections.
 
 This project adheres to the [Haskell Package Versioning Policy](https://pvp.haskell.org/).
 
+## [0.1.0.4] - 2023-01-03
+- Library now builds with `posix-api-0.4.*`. There was a backwards-incompatible
+  change in posix-api when socket families switched to using pattern synonyms.  
+
 ## [0.1.0.3] - 2019-07-22
 - Library now builds with newer `posix-api-0.3.*` and with
   `primitive-0.7.*`.
