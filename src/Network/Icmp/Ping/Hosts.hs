@@ -7,7 +7,7 @@
 {-# language ScopedTypeVariables #-}
 {-# language UnboxedTuples #-}
 
-module Network.Icmp.Ping.Hosts
+module DISABLED Network.Icmp.Ping.Hosts
   ( hosts
   , range
   ) where
