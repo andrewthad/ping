@@ -1,6 +1,6 @@
 cabal-version: 2.2
 name: ping
-version: 0.1.0.4
+version: 0.1.0.5
 synopsis: icmp echo requests
 description:
   This library provides functions that have similar behavior as the
@@ -54,15 +54,15 @@ library
     , posix-api >= 0.4 && < 0.5
     , primitive >= 0.7 && < 0.8
     , primitive-addr >= 0.1 && < 0.2
-    -- , primitive-containers >= 0.3.1
+    , primitive-containers >= 0.5
     , stm >= 2.5
     , transformers >= 0.5.5
   exposed-modules: Network.Icmp.Ping
   other-modules:
     Network.Icmp.Marshal
     Network.Icmp.Ping.Single
-    -- Network.Icmp.Ping.Hosts
-    -- Network.Icmp.Ping.Multihosts
+    Network.Icmp.Ping.Hosts
+    Network.Icmp.Ping.Multihosts
     Network.Icmp.Common
     Network.Icmp.Ping.Debug
   default-language: Haskell2010
@@ -83,7 +83,7 @@ executable multiping
   build-depends:
     , base >= 4.11.1 && <5
     , ip >= 1.5
-    , optparse-applicative >= 0.14.3.0 && < 0.15
+    , optparse-applicative >= 0.14.3
     , ping
     , primitive-containers >= 0.3.1
     , text >= 1.2.3.1

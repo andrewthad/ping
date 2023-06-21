@@ -7,7 +7,7 @@
 {-# language ScopedTypeVariables #-}
 {-# language UnboxedTuples #-}
 
-module DISABLED Network.Icmp.Ping.Multihosts
+module Network.Icmp.Ping.Multihosts
   ( multihosts
   , multirange
   ) where
